@@ -1,0 +1,526 @@
+import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+  UserPlus, Search, Phone, MapPin, Loader2, UserCheck, X, 
+  CreditCard, Wallet, Award, MapPinned, Gift, LayoutGrid, List 
+} from 'lucide-react';
+import api from '../api/axiosConfig';
+import useAuthStore from '../store/useAuthStore'; 
+import toast from 'react-hot-toast';
+
+const CustomersPage = () => {
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" or "list"
+  
+  // ✅ Get authenticated user context details
+  const user = useAuthStore((state) => state.user);
+  const activeBranchName = user?.branchName || 'Nkoranza';
+
+  // ✅ Safely normalize branch ID tracking values
+  const rawBranchId = user?.branchId || '1';
+  const activeBranchId =
+    typeof rawBranchId === 'string' && rawBranchId.includes(':')
+      ? parseInt(rawBranchId.split(':')[0], 10)
+      : parseInt(rawBranchId, 10) || 1;
+
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState("");
+  
+  const [royaltyCustomer, setRoyaltyCustomer] = useState(null);
+  const [pointsToRedeem, setPointsToRedeem] = useState("");
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    address: ''
+  });
+
+  // ✅ Local state configuration tracking backend configurations
+  const [pharmacyName, setPharmacyName] = useState('Minamo Pharmacy');
+
+  // Dynamically load the global pharmacy name from back-end settings context
+  useEffect(() => {
+    const fetchPharmacyBrand = async () => {
+      try {
+        const res = await api.get('/settings/pharmacy');
+        if (res.data && res.data.pharmacyName) {
+          setPharmacyName(res.data.pharmacyName);
+        }
+      } catch (err) {
+        console.log("Error loading pharmacy branding details inside dashboard context");
+      }
+    };
+    fetchPharmacyBrand();
+  }, []);
+
+  // 2. Fetch Customers Data (Scoped via Normalized X-Branch-Id Header)
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ['customers', activeBranchId],
+    queryFn: async () => {
+      const res = await api.get('/customers', {
+        headers: { 'X-Branch-Id': activeBranchId }
+      });
+      return Array.isArray(res.data) ? res.data : [];
+    }
+  });
+
+  // 3. Registration Mutation
+  const registerMutation = useMutation({
+    mutationFn: async (newCustomer) => {
+      const res = await api.post('/customers/register', newCustomer, {
+        headers: { 'X-Branch-Id': activeBranchId }
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Customer registered successfully!');
+      queryClient.invalidateQueries({ queryKey: ['customers', activeBranchId] });
+      setIsModalOpen(false);
+      setFormData({ name: '', phone: '', email: '', address: '' });
+    },
+    onError: (error) => {
+      toast.error(error.response?.data || 'Registration failed');
+    }
+  });
+
+  // 4. Debt Payment Mutation
+  const payDebtMutation = useMutation({
+    mutationFn: async ({ id, amount }) => {
+      const res = await api.put(`/customers/${id}/pay-debt?amount=${amount}`, {}, {
+        headers: { 'X-Branch-Id': activeBranchId }
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Payment recorded successfully!');
+      queryClient.invalidateQueries({ queryKey: ['customers', activeBranchId] });
+      setSelectedCustomer(null);
+      setPaymentAmount("");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data || 'Payment failed');
+    }
+  });
+
+  // 5. Royalty Points Redemption Mutation
+  const redeemRoyaltiesMutation = useMutation({
+    mutationFn: async ({ id, points }) => {
+      const res = await api.put(`/customers/${id}/redeem-royalties?points=${points}`, {}, {
+        headers: { 'X-Branch-Id': activeBranchId }
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success('Royalty points successfully redeemed!');
+      queryClient.invalidateQueries({ queryKey: ['customers', activeBranchId] });
+      setRoyaltyCustomer(null);
+      setPointsToRedeem("");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data || 'Redemption failed');
+    }
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name) return toast.error("Customer name is required");
+    registerMutation.mutate(formData);
+  };
+
+  // Filter lists based safely on criteria strings
+  const filteredCustomers = customers.filter(c => 
+    c.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    c.phone?.includes(searchTerm)
+  );
+
+  // Helper function to extract points safely regardless of backend property naming configurations
+  const getPoints = (customer) => {
+    return customer?.loyaltyPoints ?? customer?.loyaltyPointsBalance ?? 0;
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-end">
+        <div>
+          {/* ✅ Displays Main Pharmacy Name & Active Branch Meta */}
+          <div className="flex flex-col mb-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+              {pharmacyName}
+            </span>
+            <div className="flex items-center gap-1.5 text-blue-600 mt-0.5">
+              <MapPinned size={14} />
+              <span className="text-[10px] font-black uppercase tracking-widest">{activeBranchName} Branch</span>
+            </div>
+          </div>
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Customer Directory</h2>
+          <p className="text-slate-500 font-medium">Manage local members, balance ledgers, and reward tiers</p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          {/* VIEW MODE TOGGLE SWITCH BUTTON CONTAINER */}
+          <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 h-[52px] items-center">
+            <button 
+              onClick={() => setViewMode("grid")}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              title="Grid Cards Layout"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button 
+              onClick={() => setViewMode("list")}
+              className={`p-2.5 rounded-lg transition-all ${viewMode === "list" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              title="Compact Row List"
+            >
+              <List size={18} />
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 h-[52px]"
+          >
+            <UserPlus size={20} /> Register Member
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex items-center group focus-within:border-blue-500 transition-all">
+        <div className="p-3">
+          <Search className="text-slate-400 group-focus-within:text-blue-500" size={20} />
+        </div>
+        <input 
+          type="text" 
+          placeholder={`Search customers in ${activeBranchName}...`} 
+          className="w-full outline-none font-bold text-slate-700 p-2"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="animate-spin text-blue-600" size={40} />
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading Database...</p>
+        </div>
+      ) : filteredCustomers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-white p-6">
+          <p className="text-lg font-black text-slate-700 mb-1">No customers found</p>
+          <p className="text-sm text-slate-400 font-medium mb-4">There are no members registered to the {activeBranchName} branch yet.</p>
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="text-xs font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all"
+          >
+            + Add First Customer
+          </button>
+        </div>
+      ) : viewMode === "grid" ? (
+        /* ORIGINAL GRID LAYOUT MODE */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredCustomers.map(customer => (
+            <div key={customer.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 hover:border-blue-200 transition-all shadow-sm group relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-start mb-6">
+                  <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-inner">
+                    <UserCheck size={28} />
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">Verified Member</span>
+                    {getPoints(customer) > 500 && (
+                      <span className="bg-amber-50 text-amber-600 text-[9px] font-black px-3 py-1 rounded-full uppercase flex items-center gap-1 border border-amber-100">
+                        <Award size={10} /> VIP Tier
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="mb-6">
+                  <h3 className="font-black text-slate-800 text-xl mb-1 tracking-tight">{customer.name}</h3>
+                  <div className="space-y-1">
+                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2">
+                      <Phone size={12} className="text-blue-400" /> <span>{customer.phone || 'No Phone Registered'}</span>
+                    </div>
+                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2">
+                      <MapPin size={12} className="text-blue-400" /> <span className="truncate">{customer.address || 'Address not set'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-50">
+                  <div className="bg-blue-50/40 p-3 rounded-2xl flex flex-col justify-between">
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Royalty Points</p>
+                      <p className="font-black text-blue-600 text-lg flex items-center gap-1">
+                        {getPoints(customer)} <span className="text-[10px] text-blue-300">pts</span>
+                      </p>
+                    </div>
+                    {getPoints(customer) > 0 && (
+                      <button 
+                        onClick={() => setRoyaltyCustomer(customer)}
+                        className="mt-2 text-[10px] font-black text-blue-600 bg-white border border-blue-200 py-1 px-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-1"
+                      >
+                        <Gift size={10}/> Redeem
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className={`${customer.debtBalance > 0 ? 'bg-rose-50/50 border border-rose-100/50' : 'bg-emerald-50/50'} p-3 rounded-2xl flex flex-col justify-between`}>
+                    <div>
+                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Debt Balance</p>
+                      <p className={`font-black text-lg ${customer.debtBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        ₵{(customer.debtBalance || 0).toFixed(2)}
+                      </p>
+                    </div>
+                    {customer.debtBalance > 0 && (
+                      <button 
+                        onClick={() => setSelectedCustomer(customer)}
+                        className="mt-2 text-[10px] font-black text-rose-600 bg-white border border-rose-200 py-1 px-2 rounded-lg hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-1"
+                      >
+                        <CreditCard size={10}/> Pay Debt
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* COMPACT LIST ROW TABLE LAYOUT MODE */
+        <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/70 border-b border-slate-100">
+                <th className="p-4 pl-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Details</th>
+                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phone Number</th>
+                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Loyalty Points</th>
+                <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Debt Balance</th>
+                <th className="p-4 pr-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Actions Ledger</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCustomers.map((customer) => (
+                <tr key={customer.id} className="border-b border-slate-50 last:border-0 hover:bg-slate-50/40 transition-colors">
+                  <td className="p-4 pl-6">
+                    <p className="font-bold text-slate-800 text-sm">{customer.name}</p>
+                    <p className="text-slate-400 text-[11px] font-medium max-w-[180px] truncate">{customer.address || 'No address set'}</p>
+                  </td>
+                  <td className="p-4 text-sm font-semibold text-slate-600">{customer.phone || '—'}</td>
+                  <td className="p-4 text-center">
+                    <span className="inline-flex items-center bg-blue-50 text-blue-700 font-black text-xs px-2.5 py-1 rounded-lg gap-1">
+                      {getPoints(customer)} pts
+                    </span>
+                  </td>
+                  <td className="p-4 text-right">
+                    <span className={`font-black text-sm ${customer.debtBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      ₵{(customer.debtBalance || 0).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="p-4 pr-6">
+                    <div className="flex justify-center gap-2">
+                      {getPoints(customer) > 0 && (
+                        <button 
+                          onClick={() => setRoyaltyCustomer(customer)}
+                          className="text-[10px] font-black text-blue-600 bg-blue-50/50 py-1.5 px-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1"
+                        >
+                          <Gift size={12}/> Redeem
+                        </button>
+                      )}
+                      {customer.debtBalance > 0 ? (
+                        <button 
+                          onClick={() => setSelectedCustomer(customer)}
+                          className="text-[10px] font-black text-rose-600 bg-rose-50 py-1.5 px-3 rounded-xl hover:bg-rose-600 hover:text-white transition-all flex items-center gap-1"
+                        >
+                          <CreditCard size={12}/> Settle Debt
+                        </button>
+                      ) : (
+                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 py-1.5 px-3 rounded-xl cursor-default">
+                          Clear
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* REGISTRATION MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h3 className="text-2xl font-black text-slate-800">New Member</h3>
+                <p className="text-xs font-bold text-slate-400 uppercase">Registering to {activeBranchName}</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-slate-600 p-2">
+                <X size={28} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Full Name</label>
+                <input 
+                  type="text" required
+                  placeholder="e.g. Kwesi Mensah"
+                  className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Phone</label>
+                  <input 
+                    type="text"
+                    placeholder="024 XXX XXXX"
+                    className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Email</label>
+                  <input 
+                    type="email"
+                    placeholder="optional@mail.com"
+                    className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Residential Address</label>
+                <textarea 
+                  placeholder="House No, Landmark, City..."
+                  className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 h-28 resize-none"
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                />
+              </div>
+
+              <button 
+                type="submit"
+                disabled={registerMutation.isPending}
+                className="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex justify-center items-center gap-3"
+              >
+                {registerMutation.isPending ? <Loader2 className="animate-spin" /> : "Complete Member Onboarding"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* SETTLE DEBT MODAL */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-black text-slate-800 tracking-tight">Settle Debt</h3>
+              <button onClick={() => setSelectedCustomer(null)} className="text-slate-300 hover:text-slate-600">
+                <X size={28} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100">
+                <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Paying for</p>
+                <p className="font-black text-rose-900">{selectedCustomer.name}</p>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase block mb-2 tracking-widest">
+                  Amount to Pay
+                </label>
+                <div className="relative">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-slate-300 text-lg">₵</span>
+                  <input 
+                    type="number" 
+                    className="w-full p-5 pl-12 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-rose-600 focus:border-rose-500 text-2xl"
+                    placeholder="0.00"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                  />
+                </div>
+                <p className="mt-3 text-[11px] font-black text-rose-500 uppercase flex justify-between">
+                  <span>Current Balance:</span>
+                  <span>₵{selectedCustomer.debtBalance?.toFixed(2)}</span>
+                </p>
+              </div>
+
+              <button 
+                onClick={() => payDebtMutation.mutate({ id: selectedCustomer.id, amount: paymentAmount })}
+                disabled={!paymentAmount || payDebtMutation.isPending}
+                className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-rose-600 disabled:opacity-50 transition-all shadow-xl shadow-slate-200"
+              >
+                {payDebtMutation.isPending ? <Loader2 className="animate-spin" /> : <><Wallet size={20}/> Post Payment</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REDEEM ROYALTIES MODAL */}
+      {royaltyCustomer && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="text-xl font-black text-slate-800 tracking-tight">Redeem Royalties</h3>
+              <button onClick={() => setRoyaltyCustomer(null)} className="text-slate-300 hover:text-slate-600">
+                <X size={28} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
+                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Redeeming points for</p>
+                <p className="font-black text-blue-900">{royaltyCustomer.name}</p>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black text-slate-400 uppercase block mb-2 tracking-widest">
+                  Points to Deduct
+                </label>
+                <input 
+                  type="number" 
+                  className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-blue-600 focus:border-blue-500 text-2xl"
+                  placeholder="0"
+                  value={pointsToRedeem}
+                  onChange={(e) => setPointsToRedeem(e.target.value)}
+                />
+                <p className="mt-3 text-[11px] font-black text-blue-500 uppercase flex justify-between">
+                  <span>Available Points:</span>
+                  <span>{getPoints(royaltyCustomer)} pts</span>
+                </p>
+              </div>
+
+              <button 
+                onClick={() => {
+                  if (parseInt(pointsToRedeem, 10) > getPoints(royaltyCustomer)) {
+                    return toast.error("Insufficient loyalty points balance");
+                  }
+                  redeemRoyaltiesMutation.mutate({ id: royaltyCustomer.id, points: pointsToRedeem });
+                }}
+                disabled={!pointsToRedeem || redeemRoyaltiesMutation.isPending}
+                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100"
+              >
+                {redeemRoyaltiesMutation.isPending ? <Loader2 className="animate-spin" /> : <><Gift size={20}/> Confirm Deduction</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CustomersPage;

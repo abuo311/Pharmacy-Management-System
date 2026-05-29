@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* If you still have the old directives, replace them with the single import above 
+   or keep them if you are on a transitional version. */
+   @keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Apply floating only to icons in the collapsed sidebar on hover */
+.collapsed-icon-hover:hover {
+  animation: float 2s ease-in-out infinite;
+}
