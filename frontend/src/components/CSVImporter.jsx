@@ -25,7 +25,7 @@ const CSVImporter = ({ branchId, onComplete }) => {
     setIsUploading(true);
 
     try {
-      await axios.post('http://localhost:8080/api/medicines/import', formData, {
+      await axios.post('https://pharmacy-management-system-t64r.onrender.com/api/medicines/import', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,

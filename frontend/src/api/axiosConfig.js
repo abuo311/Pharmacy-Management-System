@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 1. Base Axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'https://pharmacy-management-system-t64r.onrender.com/api',
   headers: {
     'Content-Type': 'application/json'
   }
