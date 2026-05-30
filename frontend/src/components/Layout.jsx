@@ -67,10 +67,24 @@ const Layout = ({ children }) => {
       try {
         const res = await api.get('/settings/pharmacy');
         if (res.data && res.data.pharmacyName) {
-          setBrandInfo({
-            name: res.data.pharmacyName,
-            logo: res.data.logoData || ""
-          });
+          const name = res.data.pharmacyName;
+          const logo = res.data.logoData || "";
+          
+          setBrandInfo({ name, logo });
+
+          // --- DYNAMIC FAVICON & TITLE IMPLEMENTATION ---
+          if (logo) {
+            const favicon = document.getElementById('app-favicon');
+            if (favicon) {
+              favicon.href = logo;
+              if (logo.startsWith('data:image/png') || logo.endsWith('.png')) {
+                favicon.type = 'image/png';
+              } else if (logo.startsWith('data:image/jpeg') || logo.endsWith('.jpg')) {
+                favicon.type = 'image/jpeg';
+              }
+            }
+          }
+          document.title = `${name} Manager`;
         }
       } catch (err) {
         console.log("Error loading layout branding details");
@@ -298,34 +312,34 @@ const Layout = ({ children }) => {
       {/* 3. APP INNER SCREEN CONTAINER */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         
-        {/* RESPONSIVE UNIQUE TOP NAVBAR */}
-        <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-4 sm:px-8 shrink-0 z-40 gap-4">
+        {/* COMPACTED TOP NAVBAR (Changed from h-20 to h-14) */}
+        <header className="h-14 bg-white border-b border-slate-100 flex items-center justify-between px-4 sm:px-6 shrink-0 z-40 gap-4">
           
           <div className="flex items-center gap-3 min-w-0">
             {/* Mobile Sidebar Hamburger Trigger */}
             <button 
               onClick={() => setIsMobileOpen(true)}
-              className="p-2 -ml-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 md:hidden hover:bg-slate-100 transition-colors shrink-0"
+              className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-600 md:hidden hover:bg-slate-100 transition-colors shrink-0"
             >
-              <Menu size={20} />
+              <Menu size={18} />
             </button>
 
             <div className="flex flex-col min-w-0">
-              <h3 className="text-slate-800 font-black text-sm sm:text-lg truncate">{getPageTitle()}</h3>
-              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest truncate">
+              <h3 className="text-slate-800 font-black text-xs sm:text-sm truncate leading-tight">{getPageTitle()}</h3>
+              <p className="text-slate-400 text-[8px] sm:text-[9px] font-bold uppercase tracking-widest truncate mt-0.5">
                 {new Date().toDateString()}
               </p>
             </div>
           </div>
 
-          {/* RIGHT SIDE: UTILITIES + PREMIUM USER PROFILE MENU */}
-          <div className="flex items-center gap-4 shrink-0 relative">
-            {/* Branch Selector Badge */}
-            <div className="flex items-center bg-slate-50 border border-slate-200 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl max-w-[140px] sm:max-w-none">
-              <MapPin size={14} className={`${themeStyles.textAccent} mr-1 sm:mr-2 shrink-0`} />
+          {/* RIGHT SIDE: UTILITIES + PROFILE */}
+          <div className="flex items-center gap-3 shrink-0 relative">
+            {/* Compact Branch Selector Badge */}
+            <div className="flex items-center bg-slate-50 border border-slate-200 px-2 sm:px-3 py-1 rounded-xl max-w-[120px] sm:max-w-none">
+              <MapPin size={12} className={`${themeStyles.textAccent} mr-1 sm:mr-1.5 shrink-0`} />
               {hasRole('ADMIN') ? (
                 <select
-                  className="bg-transparent text-xs sm:text-sm font-black text-slate-700 outline-none cursor-pointer min-w-0"
+                  className="bg-transparent text-[11px] sm:text-xs font-black text-slate-700 outline-none cursor-pointer min-w-0"
                   value={user?.branchId || ""}
                   onChange={handleBranchChange}
                 >
@@ -334,24 +348,24 @@ const Layout = ({ children }) => {
                   ))}
                 </select>
               ) : (
-                <span className="text-xs sm:text-sm font-black text-slate-700 truncate">
+                <span className="text-[11px] sm:text-xs font-black text-slate-700 truncate">
                   {user?.branchName || "Main Branch"}
                 </span>
               )}
             </div>
 
-            {/* Profile Element Dropdown Trigger */}
+            {/* Compact Profile Element Dropdown Trigger */}
             <div className="relative">
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
+                className="flex items-center gap-2 p-0.5 pr-2 rounded-full hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100"
               >
-                <div className={`w-9 h-9 rounded-full ${themeStyles.bgAccent} flex items-center justify-center text-white font-black uppercase ring-2 ${themeStyles.ringColor} shrink-0 text-sm`}>
+                <div className={`w-7 h-7 rounded-full ${themeStyles.bgAccent} flex items-center justify-center text-white font-black uppercase ring-2 ${themeStyles.ringColor} shrink-0 text-xs`}>
                   {user?.username?.charAt(0)}
                 </div>
-                <div className="text-left hidden sm:block">
-                  <p className="text-slate-800 font-bold text-xs truncate max-w-[100px]">{user?.username}</p>
-                  <p className="text-slate-400 text-[9px] uppercase font-black tracking-wider">{user?.role}</p>
+                <div className="text-left hidden sm:block leading-none">
+                  <p className="text-slate-800 font-bold text-[11px] truncate max-w-[90px]">{user?.username}</p>
+                  <p className="text-slate-400 text-[8px] uppercase font-black tracking-wider mt-0.5">{user?.role}</p>
                 </div>
               </button>
 
@@ -367,9 +381,9 @@ const Layout = ({ children }) => {
                     
                     <button
                       onClick={() => { logout(); navigate('/login'); }}
-                      className="w-full flex items-center px-4 py-3 text-rose-500 hover:bg-rose-50 font-bold text-xs transition-colors gap-2.5"
+                      className="w-full flex items-center px-4 py-2.5 text-rose-500 hover:bg-rose-50 font-bold text-xs transition-colors gap-2.5"
                     >
-                      <LogOut size={16} />
+                      <LogOut size={14} />
                       <span>Sign Out</span>
                     </button>
                   </div>
@@ -380,7 +394,7 @@ const Layout = ({ children }) => {
         </header>
 
         {/* CONTAINER VIEWPORT FOR CHILDREN */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>
