@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { 
-  Pill, TrendingUp, MapPin, AlertTriangle, Loader2, 
-  BarChart3, PackageX, PackagePlus, CalendarClock, Activity, Building2
+  TrendingUp, AlertTriangle, Loader2, 
+  BarChart3, PackageX, PackagePlus, CalendarClock, Activity
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -9,14 +9,12 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import { useMedicine } from '../hooks/useMedicine';
 import { saleApi } from '../api/medicineApi';
-import api from '../api/axiosConfig';
 import useAuthStore from '../store/useAuthStore';
 
 const formatGHS = (amount) => `₵${Number(amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
 
 const StatCard = ({ icon: Icon, label, value, color, subtext, borderHoverColor }) => (
   <div className={`bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group hover:-translate-y-1 border-b-4 ${borderHoverColor}`}>
-    {/* Subtle background glow element on hover */}
     <div className={`absolute -right-6 -bottom-6 w-24 h-24 rounded-full ${color} opacity-[0.02] group-hover:opacity-[0.07] transition-all duration-500 scale-75 group-hover:scale-125`} />
     
     <div className="flex items-start justify-between relative z-10">
@@ -40,30 +38,13 @@ const StatCard = ({ icon: Icon, label, value, color, subtext, borderHoverColor }
 const Dashboard = () => {
   const user = useAuthStore((state) => state.user);
   const activeBranchId = user?.branchId || 1;
-  const activeBranchName = user?.branchName || 'Nkoranza';
   
-  const [pharmacyName, setPharmacyName] = useState("PharmaWeb");
   const { medicines, isLoading: medLoading } = useMedicine(activeBranchId);
 
   const { data: sales = [], isLoading: salesLoading } = useQuery({
     queryKey: ['sales', activeBranchId],
     queryFn: () => saleApi.getAllSales(activeBranchId).then(res => res.data)
   });
-
-  // Dynamically load the global pharmacy name from back-end settings context
-  useEffect(() => {
-    const fetchPharmacyBrand = async () => {
-      try {
-        const res = await api.get('/settings/pharmacy');
-        if (res.data && res.data.pharmacyName) {
-          setPharmacyName(res.data.pharmacyName);
-        }
-      } catch (err) {
-        console.log("Error loading pharmacy branding details inside dashboard context");
-      }
-    };
-    fetchPharmacyBrand();
-  }, []);
 
   const chartData = useMemo(() => {
     const last7Days = [...Array(7)].map((_, i) => {
@@ -84,7 +65,6 @@ const Dashboard = () => {
     });
   }, [sales]);
 
-  // Expanded Inventory Stats
   const stats = useMemo(() => {
     if (!medicines || !Array.isArray(medicines)) 
         return { totalValue: 0, expired: 0, lowStock: 0, count: 0, outOfStock: 0, overStock: 0, nearExpiry: 0 };
@@ -103,12 +83,10 @@ const Dashboard = () => {
       acc.totalValue += (unitCost * stock);
       acc.count++;
 
-      // Stock logic
       if (stock === 0) acc.outOfStock++;
       else if (stock <= minLevel) acc.lowStock++;
       else if (stock >= maxLevel) acc.overStock++;
 
-      // Expiry logic
       if (expiry && expiry < now) acc.expired++;
       else if (expiry && expiry < ninetyDaysFromNow) acc.nearExpiry++;
 
@@ -127,23 +105,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8 pb-10">
-      {/* TOP COMPACT IDENTITY BANNER */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white w-fit px-5 py-3 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex items-center space-x-2 border-b sm:border-b-0 sm:border-r border-slate-100 pb-2 sm:pb-0 sm:pr-3">
-          <Building2 className="text-blue-600" size={16} />
-          <h2 className="text-xs font-black text-slate-800 uppercase tracking-wider break-words max-w-xs">
-            {pharmacyName}
-          </h2>
-        </div>
-        <div className="flex items-center space-x-2">
-          <MapPin className="text-slate-400" size={14} />
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Location Branch: <span className="text-blue-600 font-black">{activeBranchName}</span>
-          </p>
-        </div>
-      </div>
-
-      {/* TOP ROW STATS */}
+      {/* STATS ROW */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard icon={TrendingUp} label="Inventory Value" value={formatGHS(stats.totalValue)} color="bg-emerald-600" borderHoverColor="hover:border-emerald-500" subtext="Current valuation" />
         <StatCard icon={AlertTriangle} label="Low Stock" value={stats.lowStock} color="bg-amber-600" borderHoverColor="hover:border-amber-500" subtext="Reorder point reached" />
@@ -184,44 +146,44 @@ const Dashboard = () => {
 
         {/* DISTRIBUTION & ANALYTICS */}
         <div className="space-y-6">
-            {/* OVERSTOCK CARD */}
-            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group border-b-4 hover:border-purple-500">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                        <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
-                            <PackagePlus size={18} />
-                        </div>
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Overstock Items</p>
-                    </div>
+          {/* OVERSTOCK CARD */}
+          <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 group border-b-4 hover:border-purple-500">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                  <PackagePlus size={18} />
                 </div>
-                <h4 className="text-3xl font-black text-slate-800 tracking-tight">{stats.overStock}</h4>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Exceeding maximum stock thresholds
-                </p>
+                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Overstock Items</p>
+              </div>
             </div>
+            <h4 className="text-3xl font-black text-slate-800 tracking-tight">{stats.overStock}</h4>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Exceeding maximum stock thresholds
+            </p>
+          </div>
 
-            {/* HEALTH METER */}
-            <div className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 border-b-4 hover:border-blue-500">
-                <div className="flex justify-between items-center mb-2">
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Inventory Health</p>
-                    <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                      <Activity size={16} className="animate-pulse" />
-                    </div>
-                </div>
-                <p className="text-3xl font-black text-slate-800 tracking-tight">
-                    {(((stats.count - (stats.lowStock + stats.outOfStock + stats.expired)) / stats.count) * 100).toFixed(1)}%
-                </p>
-                <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden mt-3 shadow-inner">
-                    <div 
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out" 
-                        style={{ width: `${((stats.count - (stats.lowStock + stats.outOfStock + stats.expired)) / stats.count) * 100}%` }} 
-                    />
-                </div>
-                <div className="grid grid-cols-2 gap-2 pt-4 border-t border-slate-50 mt-2">
-                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total SKUs: <span className="text-slate-700">{stats.count}</span></div>
-                    <div className="text-[10px] font-black text-rose-500 uppercase tracking-wider text-right">Expired: <span>{stats.expired}</span></div>
-                </div>
+          {/* HEALTH METER */}
+          <div className="bg-white p-7 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 border-b-4 hover:border-blue-500">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Inventory Health</p>
+              <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                <Activity size={16} className="animate-pulse" />
+              </div>
             </div>
+            <p className="text-3xl font-black text-slate-800 tracking-tight">
+              {(((stats.count - (stats.lowStock + stats.outOfStock + stats.expired)) / stats.count) * 100).toFixed(1)}%
+            </p>
+            <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden mt-3 shadow-inner">
+              <div 
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full transition-all duration-1000 ease-out" 
+                style={{ width: `${((stats.count - (stats.lowStock + stats.outOfStock + stats.expired)) / stats.count) * 100}%` }} 
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-4 border-t border-slate-50 mt-2">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total SKUs: <span className="text-slate-700">{stats.count}</span></div>
+              <div className="text-[10px] font-black text-rose-500 uppercase tracking-wider text-right">Expired: <span>{stats.expired}</span></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

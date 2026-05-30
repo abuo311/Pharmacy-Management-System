@@ -142,143 +142,147 @@ const CustomersPage = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-end">
-        <div>
+    <div className="w-full max-w-[1600px] mx-auto p-3 sm:p-6 space-y-4 sm:space-y-6 box-border overflow-x-hidden">
+      
+      {/* Top Banner Navigation & Context Control Strip */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="w-full sm:w-auto">
           {/* ✅ Displays Main Pharmacy Name & Active Branch Meta */}
           <div className="flex flex-col mb-1">
-            <span className="text-[11px] font-black uppercase tracking-wider text-slate-400">
+            <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-400 truncate max-w-[280px] sm:max-w-none">
               {pharmacyName}
             </span>
             <div className="flex items-center gap-1.5 text-blue-600 mt-0.5">
-              <MapPinned size={14} />
-              <span className="text-[10px] font-black uppercase tracking-widest">{activeBranchName} Branch</span>
+              <MapPinned size={13} className="flex-shrink-0" />
+              <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest truncate">{activeBranchName} Branch</span>
             </div>
           </div>
-          <h2 className="text-3xl font-black text-slate-800 tracking-tight">Customer Directory</h2>
-          <p className="text-slate-500 font-medium">Manage local members, balance ledgers, and reward tiers</p>
+          <h2 className="text-xl sm:text-3xl font-black text-slate-800 tracking-tight">Customer Directory</h2>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium hidden sm:block mt-0.5">Manage local members, balance ledgers, and reward tiers</p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
           {/* VIEW MODE TOGGLE SWITCH BUTTON CONTAINER */}
-          <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 h-[52px] items-center">
+          <div className="flex bg-slate-100/80 p-1 rounded-xl gap-0.5 items-center flex-shrink-0">
             <button 
               onClick={() => setViewMode("grid")}
-              className={`p-2.5 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
               title="Grid Cards Layout"
             >
-              <LayoutGrid size={18} />
+              <LayoutGrid size={16} />
             </button>
             <button 
               onClick={() => setViewMode("list")}
-              className={`p-2.5 rounded-lg transition-all ${viewMode === "list" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+              className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-white text-blue-600 shadow-sm" : "text-slate-400 hover:text-slate-600"}`}
               title="Compact Row List"
             >
-              <List size={18} />
+              <List size={16} />
             </button>
           </div>
 
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 h-[52px]"
+            className="flex-1 sm:flex-initial bg-blue-600 text-white px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl font-black text-[9px] sm:text-[11px] uppercase tracking-widest flex items-center justify-center gap-1.5 hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-600/10 whitespace-nowrap"
           >
-            <UserPlus size={20} /> Register Member
+            <UserPlus size={16} className="flex-shrink-0" /> Register Member
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex items-center group focus-within:border-blue-500 transition-all">
-        <div className="p-3">
-          <Search className="text-slate-400 group-focus-within:text-blue-500" size={20} />
+      {/* Global Search Interface bar */}
+      <div className="bg-white p-1 rounded-xl sm:rounded-2xl border border-slate-100 shadow-sm flex items-center group focus-within:border-blue-500 transition-all">
+        <div className="p-2 sm:p-3 flex-shrink-0">
+          <Search className="text-slate-400 group-focus-within:text-blue-500" size={18} />
         </div>
         <input 
           type="text" 
           placeholder={`Search customers in ${activeBranchName}...`} 
-          className="w-full outline-none font-bold text-slate-700 p-2"
+          className="w-full outline-none font-bold text-sm sm:text-base text-slate-700 p-2 bg-transparent"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
+      {/* Main Container Content Segment Frame */}
       {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="animate-spin text-blue-600" size={40} />
-          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Loading Database...</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-4 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm text-center p-4">
+          <Loader2 className="animate-spin text-blue-600" size={32} />
+          <p className="text-[9px] sm:text-xs font-black text-slate-400 uppercase tracking-widest">Loading Database...</p>
         </div>
       ) : filteredCustomers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-200 rounded-[2.5rem] bg-white p-6">
-          <p className="text-lg font-black text-slate-700 mb-1">No customers found</p>
-          <p className="text-sm text-slate-400 font-medium mb-4">There are no members registered to the {activeBranchName} branch yet.</p>
+        <div className="flex flex-col items-center justify-center py-16 sm:py-20 border-2 border-dashed border-slate-200 rounded-[1.5rem] sm:rounded-[2.5rem] bg-white p-4 sm:p-6 text-center">
+          <p className="text-base sm:text-lg font-black text-slate-700 mb-1">No customers found</p>
+          <p className="text-xs sm:text-sm text-slate-400 font-medium mb-4 max-w-sm">There are no members registered to the {activeBranchName} branch matching your criteria yet.</p>
           <button 
             onClick={() => setIsModalOpen(true)}
-            className="text-xs font-black text-blue-600 bg-blue-50 px-4 py-2 rounded-xl hover:bg-blue-100 transition-all"
+            className="text-[10px] sm:text-xs font-black text-blue-600 bg-blue-50 px-4 py-2.5 rounded-xl hover:bg-blue-100 transition-all"
           >
             + Add First Customer
           </button>
         </div>
       ) : viewMode === "grid" ? (
-        /* ORIGINAL GRID LAYOUT MODE */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        /* ORIGINAL GRID LAYOUT MODE - RESPONSIVELY ADAPTED */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
           {filteredCustomers.map(customer => (
-            <div key={customer.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 hover:border-blue-200 transition-all shadow-sm group relative overflow-hidden flex flex-col justify-between">
+            <div key={customer.id} className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2.5rem] border border-slate-100 hover:border-blue-200 transition-all shadow-sm group relative overflow-hidden flex flex-col justify-between w-full min-w-0">
               <div>
-                <div className="flex justify-between items-start mb-6">
-                  <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-inner">
-                    <UserCheck size={28} />
+                <div className="flex justify-between items-start gap-2 mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-slate-50 rounded-xl sm:rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-inner flex-shrink-0">
+                    <UserCheck size={24} sm={28} />
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100">Verified Member</span>
+                  <div className="flex flex-col items-end gap-1.5 min-w-0">
+                    <span className="bg-emerald-50 text-emerald-600 text-[8px] sm:text-[9px] font-black px-2 sm:px-3 py-1 rounded-full uppercase tracking-tighter border border-emerald-100 whitespace-nowrap">Verified Member</span>
                     {getPoints(customer) > 500 && (
-                      <span className="bg-amber-50 text-amber-600 text-[9px] font-black px-3 py-1 rounded-full uppercase flex items-center gap-1 border border-amber-100">
-                        <Award size={10} /> VIP Tier
+                      <span className="bg-amber-50 text-amber-600 text-[8px] sm:text-[9px] font-black px-2 sm:px-3 py-1 rounded-full uppercase flex items-center gap-1 border border-amber-100 whitespace-nowrap">
+                        <Award size={10} className="flex-shrink-0" /> VIP Tier
                       </span>
                     )}
                   </div>
                 </div>
                 
-                <div className="mb-6">
-                  <h3 className="font-black text-slate-800 text-xl mb-1 tracking-tight">{customer.name}</h3>
-                  <div className="space-y-1">
-                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2">
-                      <Phone size={12} className="text-blue-400" /> <span>{customer.phone || 'No Phone Registered'}</span>
+                <div className="mb-4 sm:mb-6 min-w-0">
+                  <h3 className="font-black text-slate-800 text-lg sm:text-xl mb-1 sm:mb-1.5 tracking-tight truncate">{customer.name}</h3>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2 min-w-0">
+                      <Phone size={12} className="text-blue-400 flex-shrink-0" /> <span className="truncate">{customer.phone || 'No Phone Registered'}</span>
                     </div>
-                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2">
-                      <MapPin size={12} className="text-blue-400" /> <span className="truncate">{customer.address || 'Address not set'}</span>
+                    <div className="flex items-center text-slate-400 text-xs font-bold gap-2 min-w-0">
+                      <MapPin size={12} className="text-blue-400 flex-shrink-0" /> <span className="truncate">{customer.address || 'Address not set'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-50">
-                  <div className="bg-blue-50/40 p-3 rounded-2xl flex flex-col justify-between">
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Royalty Points</p>
-                      <p className="font-black text-blue-600 text-lg flex items-center gap-1">
-                        {getPoints(customer)} <span className="text-[10px] text-blue-300">pts</span>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-slate-50 w-full">
+                  <div className="bg-blue-50/40 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col justify-between min-w-0">
+                    <div className="min-w-0">
+                      <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 truncate">Royalty Points</p>
+                      <p className="font-black text-blue-600 text-base sm:text-lg flex items-baseline gap-0.5 truncate">
+                        {getPoints(customer)} <span className="text-[9px] sm:text-[10px] text-blue-300 font-bold">pts</span>
                       </p>
                     </div>
                     {getPoints(customer) > 0 && (
                       <button 
                         onClick={() => setRoyaltyCustomer(customer)}
-                        className="mt-2 text-[10px] font-black text-blue-600 bg-white border border-blue-200 py-1 px-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-1"
+                        className="mt-2 text-[9px] sm:text-[10px] font-black text-blue-600 bg-white border border-blue-200 py-1 px-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-1 min-w-0"
                       >
-                        <Gift size={10}/> Redeem
+                        <Gift size={10} className="flex-shrink-0"/> <span className="truncate">Redeem</span>
                       </button>
                     )}
                   </div>
                   
-                  <div className={`${customer.debtBalance > 0 ? 'bg-rose-50/50 border border-rose-100/50' : 'bg-emerald-50/50'} p-3 rounded-2xl flex flex-col justify-between`}>
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Debt Balance</p>
-                      <p className={`font-black text-lg ${customer.debtBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <div className={`${customer.debtBalance > 0 ? 'bg-rose-50/50 border border-rose-100/50' : 'bg-emerald-50/50'} p-2.5 sm:p-3 rounded-xl sm:rounded-2xl flex flex-col justify-between min-w-0`}>
+                    <div className="min-w-0">
+                      <p className="text-[8px] sm:text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 truncate">Debt Balance</p>
+                      <p className={`font-black text-base sm:text-lg truncate ${customer.debtBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                         ₵{(customer.debtBalance || 0).toFixed(2)}
                       </p>
                     </div>
                     {customer.debtBalance > 0 && (
                       <button 
                         onClick={() => setSelectedCustomer(customer)}
-                        className="mt-2 text-[10px] font-black text-rose-600 bg-white border border-rose-200 py-1 px-2 rounded-lg hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-1"
+                        className="mt-2 text-[9px] sm:text-[10px] font-black text-rose-600 bg-white border border-rose-200 py-1 px-1.5 rounded-lg hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center gap-1 min-w-0"
                       >
-                        <CreditCard size={10}/> Pay Debt
+                        <CreditCard size={10} className="flex-shrink-0"/> <span className="truncate">Pay Debt</span>
                       </button>
                     )}
                   </div>
@@ -288,9 +292,9 @@ const CustomersPage = () => {
           ))}
         </div>
       ) : (
-        /* COMPACT LIST ROW TABLE LAYOUT MODE */
-        <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm">
-          <table className="w-full text-left border-collapse">
+        /* COMPACT LIST ROW TABLE LAYOUT MODE - RESPONSIVELY ISOLATED WITH OVERFLOW-X */
+        <div className="w-full bg-white rounded-[1.5rem] sm:rounded-[2rem] border border-slate-100 overflow-x-auto shadow-sm custom-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
               <tr className="bg-slate-50/70 border-b border-slate-100">
                 <th className="p-4 pl-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Details</th>
@@ -349,49 +353,49 @@ const CustomersPage = () => {
         </div>
       )}
 
-      {/* REGISTRATION MODAL */}
+      {/* REGISTRATION MODAL - MOBILE ADAPTED RADIUS & PADDING */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h3 className="text-2xl font-black text-slate-800">New Member</h3>
-                <p className="text-xs font-bold text-slate-400 uppercase">Registering to {activeBranchName}</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-md rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto custom-scrollbar">
+            <div className="flex justify-between items-center mb-6 sm:mb-8">
+              <div className="min-w-0">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-800 truncate">New Member</h3>
+                <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide truncate">Registering to {activeBranchName}</p>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-slate-600 p-2">
-                <X size={28} />
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-slate-600 p-1 sm:p-2 flex-shrink-0">
+                <X size={24} sm={28} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Full Name</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-1.5 block tracking-widest">Full Name</label>
                 <input 
                   type="text" required
                   placeholder="e.g. Kwesi Mensah"
-                  className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all"
+                  className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 focus:bg-white transition-all text-sm sm:text-base"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Phone</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1.5 block tracking-widest">Phone</label>
                   <input 
                     type="text"
                     placeholder="024 XXX XXXX"
-                    className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500"
+                    className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 text-sm sm:text-base"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Email</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-1.5 block tracking-widest">Email</label>
                   <input 
                     type="email"
                     placeholder="optional@mail.com"
-                    className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500"
+                    className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 text-sm sm:text-base"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                   />
@@ -399,10 +403,10 @@ const CustomersPage = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Residential Address</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-1.5 block tracking-widest">Residential Address</label>
                 <textarea 
                   placeholder="House No, Landmark, City..."
-                  className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 h-28 resize-none"
+                  className="w-full p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-100 font-bold outline-none focus:border-blue-500 h-24 sm:h-28名 resize-none text-sm sm:text-base"
                   value={formData.address}
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
                 />
@@ -411,7 +415,7 @@ const CustomersPage = () => {
               <button 
                 type="submit"
                 disabled={registerMutation.isPending}
-                className="w-full bg-blue-600 text-white py-5 rounded-[1.5rem] font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex justify-center items-center gap-3"
+                className="w-full bg-blue-600 text-white py-4 sm:py-5 rounded-xl sm:rounded-[1.5rem] font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex justify-center items-center gap-2 sm:gap-3 text-xs sm:text-sm"
               >
                 {registerMutation.isPending ? <Loader2 className="animate-spin" /> : "Complete Member Onboarding"}
               </button>
@@ -420,38 +424,38 @@ const CustomersPage = () => {
         </div>
       )}
 
-      {/* SETTLE DEBT MODAL */}
+      {/* SETTLE DEBT MODAL - MOBILE ADAPTED RADIUS & PADDING */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight">Settle Debt</h3>
-              <button onClick={() => setSelectedCustomer(null)} className="text-slate-300 hover:text-slate-600">
-                <X size={28} />
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-sm rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-black text-slate-800 tracking-tight">Settle Debt</h3>
+              <button onClick={() => setSelectedCustomer(null)} className="text-slate-300 hover:text-slate-600 flex-shrink-0">
+                <X size={24} sm={28} />
               </button>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100">
-                <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1">Paying for</p>
-                <p className="font-black text-rose-900">{selectedCustomer.name}</p>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="bg-rose-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-rose-100 min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-black text-rose-500 uppercase tracking-widest mb-0.5">Paying for</p>
+                <p className="font-black text-rose-900 text-sm sm:text-base truncate">{selectedCustomer.name}</p>
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase block mb-2 tracking-widest">
+                <label className="text-[10px] font-black text-slate-400 uppercase block mb-1.5 tracking-widest">
                   Amount to Pay
                 </label>
                 <div className="relative">
-                  <span className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-slate-300 text-lg">₵</span>
+                  <span className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 font-black text-slate-300 text-base sm:text-lg">₵</span>
                   <input 
                     type="number" 
-                    className="w-full p-5 pl-12 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-rose-600 focus:border-rose-500 text-2xl"
+                    className="w-full p-4 sm:p-5 pl-10 sm:pl-12 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl outline-none font-black text-rose-600 focus:border-rose-500 text-xl sm:text-2xl"
                     placeholder="0.00"
                     value={paymentAmount}
                     onChange={(e) => setPaymentAmount(e.target.value)}
                   />
                 </div>
-                <p className="mt-3 text-[11px] font-black text-rose-500 uppercase flex justify-between">
+                <p className="mt-2.5 sm:mt-3 text-[10px] sm:text-[11px] font-black text-rose-500 uppercase flex justify-between">
                   <span>Current Balance:</span>
                   <span>₵{selectedCustomer.debtBalance?.toFixed(2)}</span>
                 </p>
@@ -460,44 +464,44 @@ const CustomersPage = () => {
               <button 
                 onClick={() => payDebtMutation.mutate({ id: selectedCustomer.id, amount: paymentAmount })}
                 disabled={!paymentAmount || payDebtMutation.isPending}
-                className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-rose-600 disabled:opacity-50 transition-all shadow-xl shadow-slate-200"
+                className="w-full bg-slate-900 text-white py-4 sm:py-5 rounded-xl sm:rounded-2xl font-black flex items-center justify-center gap-2 sm:gap-3 hover:bg-rose-600 disabled:opacity-50 transition-all shadow-xl shadow-slate-200 text-xs sm:text-sm"
               >
-                {payDebtMutation.isPending ? <Loader2 className="animate-spin" /> : <><Wallet size={20}/> Post Payment</>}
+                {payDebtMutation.isPending ? <Loader2 className="animate-spin" /> : <><Wallet size={16}/> Post Payment</>}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* REDEEM ROYALTIES MODAL */}
+      {/* REDEEM ROYALTIES MODAL - MOBILE ADAPTED RADIUS & PADDING */}
       {royaltyCustomer && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-          <div className="bg-white w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="text-xl font-black text-slate-800 tracking-tight">Redeem Royalties</h3>
-              <button onClick={() => setRoyaltyCustomer(null)} className="text-slate-300 hover:text-slate-600">
-                <X size={28} />
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white w-full max-w-sm rounded-[1.5rem] sm:rounded-[2.5rem] p-6 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-200 max-h-[95vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-black text-slate-800 tracking-tight">Redeem Royalties</h3>
+              <button onClick={() => setRoyaltyCustomer(null)} className="text-slate-300 hover:text-slate-600 flex-shrink-0">
+                <X size={24} sm={28} />
               </button>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Redeeming points for</p>
-                <p className="font-black text-blue-900">{royaltyCustomer.name}</p>
+            <div className="space-y-4 sm:space-y-6">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-100 min-w-0">
+                <p className="text-[9px] sm:text-[10px] font-black text-blue-500 uppercase tracking-widest mb-0.5">Redeeming points for</p>
+                <p className="font-black text-blue-900 text-sm sm:text-base truncate">{royaltyCustomer.name}</p>
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase block mb-2 tracking-widest">
+                <label className="text-[10px] font-black text-slate-400 uppercase block mb-1.5 tracking-widest">
                   Points to Deduct
                 </label>
                 <input 
                   type="number" 
-                  className="w-full p-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-blue-600 focus:border-blue-500 text-2xl"
+                  className="w-full p-4 sm:p-5 bg-slate-50 border border-slate-100 rounded-xl sm:rounded-2xl outline-none font-black text-blue-600 focus:border-blue-500 text-xl sm:text-2xl"
                   placeholder="0"
                   value={pointsToRedeem}
                   onChange={(e) => setPointsToRedeem(e.target.value)}
                 />
-                <p className="mt-3 text-[11px] font-black text-blue-500 uppercase flex justify-between">
+                <p className="mt-2.5 sm:mt-3 text-[10px] sm:text-[11px] font-black text-blue-500 uppercase flex justify-between">
                   <span>Available Points:</span>
                   <span>{getPoints(royaltyCustomer)} pts</span>
                 </p>
@@ -511,9 +515,9 @@ const CustomersPage = () => {
                   redeemRoyaltiesMutation.mutate({ id: royaltyCustomer.id, points: pointsToRedeem });
                 }}
                 disabled={!pointsToRedeem || redeemRoyaltiesMutation.isPending}
-                className="w-full bg-blue-600 text-white py-5 rounded-2xl font-black flex items-center justify-center gap-3 hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100"
+                className="w-full bg-blue-600 text-white py-4 sm:py-5 rounded-xl sm:rounded-2xl font-black flex items-center justify-center gap-2 sm:gap-3 hover:bg-blue-700 disabled:opacity-50 transition-all shadow-xl shadow-blue-100 text-xs sm:text-sm"
               >
-                {redeemRoyaltiesMutation.isPending ? <Loader2 className="animate-spin" /> : <><Gift size={20}/> Confirm Deduction</>}
+                {redeemRoyaltiesMutation.isPending ? <Loader2 className="animate-spin" /> : <><Gift size={16}/> Confirm Deduction</>}
               </button>
             </div>
           </div>

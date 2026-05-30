@@ -106,7 +106,6 @@ const SettingsPage = () => {
     try {
       await api.put('/settings/pharmacy', pharmacyDetails);
       toast.success("Pharmacy configurations saved cleanly!");
-      // ⚡ Broadcast layout event so the global sidebar updates its image/branding name instantly
       window.dispatchEvent(new Event('pharmacyDetailsChanged'));
     } catch (err) {
       toast.error("Error saving store branding details context layout");
@@ -156,7 +155,6 @@ const SettingsPage = () => {
     finally { setIsLoading(false); }
   };
 
-  // --- NEW UPDATE BRANCH ACTION ---
   const handleUpdateBranch = async (e, id) => {
     e.preventDefault();
     setIsLoading(true);
@@ -172,7 +170,6 @@ const SettingsPage = () => {
     }
   };
 
-  // --- TRIGGER TOGGLE VIEW FUNCTION ---
   const startEditingBranch = (branch) => {
     setEditingBranchId(branch.id);
     setEditBranchForm({
@@ -202,7 +199,6 @@ const SettingsPage = () => {
     } catch (err) { toast.error("Could not remove branch"); }
   };
 
-  // Dynamically select tab color tokens based on active theme choice
   const getThemeButtonStyles = (tabId) => {
     if (activeTab === tabId) {
       return `${currentThemeConfig.baseColor} text-white shadow-lg`;
@@ -211,50 +207,50 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="flex gap-6 h-[calc(100vh-160px)] p-6">
+    <div className="flex flex-col md:flex-row gap-6 min-h-[calc(100vh-160px)] md:h-[calc(100vh-160px)] p-4 md:p-6">
       {/* Sidebar Navigation */}
-      <div className="w-64 space-y-2">
-        <button onClick={() => setActiveTab("pharmacy")} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all ${getThemeButtonStyles("pharmacy")}`}>
-          <Building2 size={20} /> Store Identity
+      <div className="flex flex-row overflow-x-auto md:flex-col gap-2 pb-2 md:pb-0 md:w-64 shrink-0 no-scrollbar snap-x">
+        <button onClick={() => setActiveTab("pharmacy")} className={`snap-center shrink-0 w-auto md:w-full flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl font-bold transition-all text-sm md:text-base ${getThemeButtonStyles("pharmacy")}`}>
+          <Building2 size={20} /> <span className="whitespace-nowrap">Store Identity</span>
         </button>
-        <button onClick={() => setActiveTab("categories")} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all ${getThemeButtonStyles("categories")}`}>
-          <Tag size={20} /> Categories
+        <button onClick={() => setActiveTab("categories")} className={`snap-center shrink-0 w-auto md:w-full flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl font-bold transition-all text-sm md:text-base ${getThemeButtonStyles("categories")}`}>
+          <Tag size={20} /> <span className="whitespace-nowrap">Categories</span>
         </button>
-        <button onClick={() => setActiveTab("branches")} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all ${getThemeButtonStyles("branches")}`}>
-          <Store size={20} /> Branches
+        <button onClick={() => setActiveTab("branches")} className={`snap-center shrink-0 w-auto md:w-full flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl font-bold transition-all text-sm md:text-base ${getThemeButtonStyles("branches")}`}>
+          <Store size={20} /> <span className="whitespace-nowrap">Branches</span>
         </button>
-        <button onClick={() => setActiveTab("preferences")} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold transition-all ${getThemeButtonStyles("preferences")}`}>
-          <Palette size={20} /> Theme Settings
+        <button onClick={() => setActiveTab("preferences")} className={`snap-center shrink-0 w-auto md:w-full flex items-center justify-center md:justify-start gap-3 p-3 md:p-4 rounded-2xl font-bold transition-all text-sm md:text-base ${getThemeButtonStyles("preferences")}`}>
+          <Palette size={20} /> <span className="whitespace-nowrap">Theme Settings</span>
         </button>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+      <div className="flex-1 bg-white rounded-3xl border border-slate-200 shadow-sm flex flex-col overflow-hidden min-h-[400px]">
 
         {/* PHARMACY STORE IDENTITY TAB */}
         {activeTab === 'pharmacy' && (
           <form onSubmit={handleUpdatePharmacyDetails} className="flex flex-col h-full">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+            <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
               <div>
-                <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+                <h3 className="font-black text-slate-800 text-base md:text-lg flex items-center gap-2">
                   <Building2 className={currentThemeConfig.textColor} size={20} /> Pharmacy Identity Settings
                 </h3>
-                <p className="text-xs text-slate-400 font-bold mt-0.5 uppercase tracking-wider">Configure metadata used on cross-system billing modules and layout metrics</p>
+                <p className="text-[10px] md:text-xs text-slate-400 font-bold mt-0.5 uppercase tracking-wider">Configure metadata used on cross-system billing modules</p>
               </div>
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-6 py-2.5 rounded-xl font-black text-sm flex items-center gap-2 transition-all disabled:opacity-50`}
+                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-6 py-2.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50 w-full sm:w-auto`}
               >
                 {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 Save Details
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 max-w-3xl grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               
               {/* BRAND IMAGE LOGO FILE UPLOADER FIELD */}
-              <div className="md:col-span-2 flex items-center gap-6 p-4 bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl">
+              <div className="sm:col-span-2 flex flex-col sm:flex-row items-center gap-4 md:gap-6 p-4 bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl text-center sm:text-left">
                 <div className="shrink-0 w-20 h-20 bg-white rounded-xl border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
                   {pharmacyDetails.logoData ? (
                     <img src={pharmacyDetails.logoData} alt="Pharmacy Corporate Logo" className="w-full h-full object-contain" />
@@ -262,11 +258,11 @@ const SettingsPage = () => {
                     <Building2 className="text-slate-300" size={32} />
                   )}
                 </div>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col items-center sm:items-start gap-1 w-full">
                   <span className="text-xs font-black text-slate-700 uppercase tracking-wider">Official Brand Emblem</span>
                   <p className="text-[11px] text-slate-400 font-bold mb-2">Accepts transparent web files under 2MB</p>
                   <input type="file" accept="image/*" id="logo-file-input" className="hidden" onChange={handleLogoUpload} />
-                  <label htmlFor="logo-file-input" className={`cursor-pointer text-center px-4 py-1.5 rounded-lg text-xs font-black text-white ${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} transition-colors max-w-xs`}>
+                  <label htmlFor="logo-file-input" className={`cursor-pointer text-center px-4 py-1.5 rounded-lg text-xs font-black text-white ${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} transition-colors w-full sm:w-auto max-w-xs`}>
                     Choose Image File
                   </label>
                 </div>
@@ -348,7 +344,7 @@ const SettingsPage = () => {
               </div>
 
               {/* STREET LOCATION ADDRESS */}
-              <div className="flex flex-col gap-2 md:col-span-2">
+              <div className="flex flex-col gap-2 sm:col-span-2">
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider">Headquarters Street Address Location</label>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-3.5 text-slate-400" size={16} />
@@ -364,23 +360,23 @@ const SettingsPage = () => {
         {/* CATEGORIES TAB */}
         {activeTab === 'categories' && (
           <>
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+            <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+              <h3 className="font-black text-slate-800 text-base md:text-lg flex items-center gap-2">
                 <Tag className={currentThemeConfig.textColor} size={20} /> Category Management
               </h3>
               <button
                 onClick={() => setIsCatModalOpen(true)}
-                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-5 py-2 rounded-xl font-black text-sm flex items-center gap-2 transition-colors`}
+                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-5 py-2 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-colors w-full sm:w-auto`}
               >
                 <Plus size={18} /> Add Category
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-8 grid grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {categories.map((cat) => (
                 <div key={cat.id} className="p-5 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-4 group">
                   <div className="flex justify-between items-start">
                     <span className={`px-3 py-1 rounded-lg text-xs font-black ${cat.color}`}>{cat.name}</span>
-                    <button onClick={() => handleDeleteCategory(cat.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
+                    <button onClick={() => handleDeleteCategory(cat.id)} className="text-slate-300 hover:text-red-500 md:opacity-0 group-hover:opacity-100 transition-all"><Trash2 size={16} /></button>
                   </div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{cat.productCount || 0} Products Linked</p>
                 </div>
@@ -392,18 +388,18 @@ const SettingsPage = () => {
         {/* BRANCHES TAB */}
         {activeTab === 'branches' && (
           <>
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+            <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between sm:items-center">
+              <h3 className="font-black text-slate-800 text-base md:text-lg flex items-center gap-2">
                 <Store className={currentThemeConfig.textColor} size={20} /> Branch Locations
               </h3>
               <button
                 onClick={() => setIsBranchModalOpen(true)}
-                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-5 py-2 rounded-xl font-black text-sm flex items-center gap-2 transition-colors`}
+                className={`${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white px-5 py-2 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-colors w-full sm:w-auto`}
               >
                 <Plus size={18} /> New Branch
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {branches.map((branch) => {
                 const isEditing = editingBranchId === branch.id;
                 
@@ -477,7 +473,7 @@ const SettingsPage = () => {
                             </span>
                           </div>
                           
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <div className="flex items-center gap-1 md:opacity-0 group-hover:opacity-100 transition-all">
                             <button 
                               onClick={() => startEditingBranch(branch)} 
                               className="text-slate-400 hover:text-blue-600 p-1"
@@ -513,15 +509,15 @@ const SettingsPage = () => {
         {/* PREFERENCES & SYSTEM THEME TAB */}
         {activeTab === 'preferences' && (
           <>
-            <div className="p-6 border-b border-slate-100">
-              <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">
+            <div className="p-4 md:p-6 border-b border-slate-100">
+              <h3 className="font-black text-slate-800 text-base md:text-lg flex items-center gap-2">
                 <Palette className="text-slate-700" size={20} /> Theme Settings & Styling
               </h3>
               <p className="text-xs text-slate-400 font-bold mt-1 uppercase tracking-wider">Choose your overall system dashboard brand appearance preference</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 max-w-2xl space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 max-w-2xl space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {uiThemeOptions.map((theme) => (
                   <button
                     key={theme.id}
@@ -539,7 +535,7 @@ const SettingsPage = () => {
                       <span className="font-bold text-sm text-slate-700">{theme.name}</span>
                     </div>
                     {activeTheme === theme.id && (
-                      <div className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center">
+                      <div className="w-5 h-5 bg-slate-900 text-white rounded-full flex items-center justify-center shrink-0">
                         <Check size={12} strokeWidth={3} />
                       </div>
                     )}
@@ -547,10 +543,10 @@ const SettingsPage = () => {
                 ))}
               </div>
 
-              <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="p-4 md:p-6 bg-slate-50 rounded-2xl border border-slate-100">
                 <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Live Dynamic Preview</h4>
                 <div className="flex items-center gap-3">
-                  <div className={`w-3.5 h-3.5 rounded-full ${currentThemeConfig.baseColor}`} />
+                  <div className={`w-3.5 h-3.5 rounded-full ${currentThemeConfig.baseColor} shrink-0`} />
                   <p className="text-xs text-slate-600 font-medium">
                     Main dashboard panels, tracking metrics badges, and system interaction buttons will adapt to this profile setup option layout automatically.
                   </p>
@@ -564,13 +560,13 @@ const SettingsPage = () => {
       {/* MODALS */}
       {isCatModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-black text-slate-800">New Category</h2>
               <button onClick={() => setIsCatModalOpen(false)} className="text-slate-400"><X /></button>
             </div>
             <form onSubmit={handleCreateCategory} className="space-y-6">
-              <input required type="text" placeholder="Category Name" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold animate-none" value={newCategory.name} onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })} />
+              <input required type="text" placeholder="Category Name" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold" value={newCategory.name} onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })} />
               <div className="grid grid-cols-2 gap-2">
                 {colorOptions.map((opt) => (
                   <button key={opt.value} type="button" onClick={() => setNewCategory({ ...newCategory, color: opt.value })} className={`p-3 rounded-xl text-xs font-black border-2 transition-all ${opt.value} ${newCategory.color === opt.value ? 'border-blue-600 ring-2 ring-blue-100' : 'border-transparent opacity-60'}`}>{opt.label}</button>
@@ -586,19 +582,28 @@ const SettingsPage = () => {
 
       {isBranchModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6 md:p-8 shadow-2xl animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black text-slate-800">Register Branch</h2>
+              <h2 className="text-xl font-black text-slate-800">New Branch Registration</h2>
               <button onClick={() => setIsBranchModalOpen(false)} className="text-slate-400"><X /></button>
             </div>
             <form onSubmit={handleCreateBranch} className="space-y-4">
-              <input required type="text" placeholder="Branch Name (e.g., Minamo Kumasi)" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold text-sm" value={newBranch.name} onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })} />
-              <input required type="text" placeholder="Location/Street" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold text-sm" value={newBranch.location} onChange={(e) => setNewBranch({ ...newBranch, location: e.target.value })} />
-              <select className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold text-sm" value={newBranch.type} onChange={(e) => setNewBranch({ ...newBranch, type: e.target.value })}>
-                <option value="Retail">Retail Store</option>
-                <option value="Hub">Distribution Hub</option>
-              </select>
-              <button type="submit" disabled={isLoading} className={`w-full ${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white py-4 mt-2 rounded-2xl font-black flex items-center justify-center gap-2 transition-colors`}>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">Branch Identifier Name</label>
+                <input required type="text" placeholder="e.g., Minamo Pharmacy Main" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold text-sm" value={newBranch.name} onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">Geographic Street Location</label>
+                <input required type="text" placeholder="e.g., Techiman Station" className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-bold text-sm" value={newBranch.location} onChange={(e) => setNewBranch({ ...newBranch, location: e.target.value })} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-wider">Operational Branch Profile Type</label>
+                <select className="w-full p-4 bg-slate-50 border rounded-2xl outline-none font-black text-sm cursor-pointer" value={newBranch.type} onChange={(e) => setNewBranch({ ...newBranch, type: e.target.value })}>
+                  <option value="Retail">Retail Storefront</option>
+                  <option value="Hub">Centralized Warehousing Hub</option>
+                </select>
+              </div>
+              <button type="submit" disabled={isLoading} className={`w-full ${currentThemeConfig.baseColor} ${currentThemeConfig.hoverColor} text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 transition-colors mt-2`}>
                 {isLoading ? <Loader2 className="animate-spin" /> : 'Register Branch'}
               </button>
             </form>

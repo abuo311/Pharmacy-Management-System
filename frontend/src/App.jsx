@@ -54,8 +54,10 @@ const ProtectedWrapper = ({ isAuthenticated, isReady }) => {
 };
 
 function App() {
+  // ✅ Explicitly added logout hook listener reference from store instance
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   const isReady = !!user;
   const branchId = user?.branchId ?? null;
@@ -65,9 +67,9 @@ function App() {
     // Clear the active session tracking values from localStorage persistence
     localStorage.removeItem('auth-storage'); 
     
-    // Fire the store's deep state reset method to force navigation to /login
-    useAuthStore.getState().logout();
-  }, []);
+    // Clear state smoothly using our extracted logout action
+    logout();
+  }, [logout]);
 
   // Global Theme Initialization Hook Sync
   useEffect(() => {
