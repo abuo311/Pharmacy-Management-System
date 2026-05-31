@@ -65,16 +65,17 @@ public class SecurityConfig {
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                                 .authorizeHttpRequests(auth -> auth
+                                                // --- CRITICAL FIXED ORDER: AUTHORIZATION RULES FIRST ---
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 .requestMatchers("/api/auth/**").permitAll()
                                                 .requestMatchers("/error").permitAll()
 
+                                                // --- 2. PUBLIC SETTINGS ENDPOINTS ---
+                                                .requestMatchers(HttpMethod.GET, "/api/settings/pharmacy").permitAll()
+
                                                 // --- 1. USER MANAGEMENT ---
                                                 .requestMatchers("/api/users", "/api/users/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN")
-
-                                                // --- 2. PUBLIC SETTINGS ENDPOINTS ---
-                                                .requestMatchers(HttpMethod.GET, "/api/settings/pharmacy").permitAll()
 
                                                 // --- 3. REPORTS & ANALYTICS ---
                                                 .requestMatchers("/api/reports", "/api/reports/**")
@@ -87,13 +88,11 @@ public class SecurityConfig {
                                                 // --- 5. MEDICINES & INVENTORY ---
                                                 .requestMatchers(HttpMethod.POST, "/api/medicines", "/api/medicines/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER")
+                                                                "MANAGER", "ROLE_MANAGER")
 
                                                 .requestMatchers(HttpMethod.PUT, "/api/medicines", "/api/medicines/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER")
+                                                                "MANAGER", "ROLE_MANAGER")
 
                                                 .requestMatchers(HttpMethod.DELETE, "/api/medicines",
                                                                 "/api/medicines/**")
@@ -103,29 +102,26 @@ public class SecurityConfig {
                                                 // categories
                                                 .requestMatchers(HttpMethod.GET, "/api/medicines", "/api/medicines/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
                                                 .requestMatchers("/api/categories", "/api/categories/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
                                                 .requestMatchers("/api/dashboard", "/api/dashboard/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
-                                                // --- 6. SALES & TRANSACTIONS (Fixes 403 on history pages) ---
+                                                // --- 6. SALES & TRANSACTIONS ---
                                                 .requestMatchers(HttpMethod.POST, "/api/sales", "/api/sales/**")
                                                 .hasAnyAuthority("CASHIER", "ROLE_CASHIER", "PHARMACIST",
-                                                                "ROLE_PHARMACIST", "ADMIN",
-                                                                "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
+                                                                "ROLE_PHARMACIST",
+                                                                "ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER")
 
                                                 .requestMatchers(HttpMethod.GET, "/api/sales", "/api/sales/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER",
-                                                                "PHARMACIST",
-                                                                "ROLE_PHARMACIST", "CASHIER", "ROLE_CASHIER")
+                                                                "PHARMACIST", "ROLE_PHARMACIST", "CASHIER",
+                                                                "ROLE_CASHIER")
 
                                                 .requestMatchers(HttpMethod.DELETE, "/api/sales", "/api/sales/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN")
@@ -133,25 +129,22 @@ public class SecurityConfig {
                                                 // --- 7. CUSTOMERS ---
                                                 .requestMatchers("/api/customers", "/api/customers/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "MANAGER", "ROLE_MANAGER",
-                                                                "PHARMACIST",
-                                                                "ROLE_PHARMACIST", "CASHIER", "ROLE_CASHIER")
+                                                                "PHARMACIST", "ROLE_PHARMACIST", "CASHIER",
+                                                                "ROLE_CASHIER")
 
-                                                // --- 8. PRESCRIPTIONS (Fixes Prescription Dashboard 403) ---
+                                                // --- 8. PRESCRIPTIONS ---
                                                 .requestMatchers("/api/prescription", "/api/prescription/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
                                                 .requestMatchers("/api/prescriptions", "/api/prescriptions/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
-                                                // --- 9. BRANCHES (Fixes missing dropdown values) ---
+                                                // --- 9. BRANCHES ---
                                                 .requestMatchers(HttpMethod.GET, "/api/branches", "/api/branches/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN", "PHARMACIST", "ROLE_PHARMACIST",
-                                                                "MANAGER",
-                                                                "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
+                                                                "MANAGER", "ROLE_MANAGER", "CASHIER", "ROLE_CASHIER")
 
                                                 .requestMatchers("/api/branches", "/api/branches/**")
                                                 .hasAnyAuthority("ADMIN", "ROLE_ADMIN")
@@ -168,7 +161,6 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
 
-                // Add your production Vercel frontend URL here alongside localhost
                 configuration.setAllowedOrigins(Arrays.asList(
                                 "http://localhost:5173",
                                 "https://pharmacy-management-system-lyart-three.vercel.app"));
@@ -179,6 +171,8 @@ public class SecurityConfig {
                                 "Authorization",
                                 "Content-Type",
                                 "Accept",
+                                "Origin",
+                                "X-Requested-With",
                                 "X-Branch-Id",
                                 "x-branch-id"));
 
